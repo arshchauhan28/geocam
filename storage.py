@@ -126,6 +126,14 @@ class RemoteStore:
         self.database_url = database_url
         self.bucket = bucket
 
+        endpoint_url = (
+            endpoint_url
+            or os.environ.get("S3_ENDPOINT_URL")
+            or os.environ.get("S3_ENDPOINT")
+            or "https://phdmahrskxbgzepzmewh.storage.supabase.co/storage/v1/s3"
+        ).strip()
+
+        
         ak = (os.environ.get("AWS_ACCESS_KEY_ID") or access_key or "").strip()
         sk = (os.environ.get("AWS_SECRET_ACCESS_KEY") or secret_key or "").strip()
         print("S3 DEBUG key:", repr(ak), "len:", len(ak),
@@ -134,7 +142,7 @@ class RemoteStore:
               "| region:", repr(region), flush=True)
 
         self.s3 = boto3.client(
-            "s3", endpoint_url=endpoint_url or None,
+            "s3", endpoint_url=endpoint_url,
             aws_access_key_id=ak,
             aws_secret_access_key=sk,
             region_name=region,
