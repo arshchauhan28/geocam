@@ -17,7 +17,6 @@ class ResultPage extends StatefulWidget {
 
 class _ResultPageState extends State<ResultPage> {
   Uint8List? _processed;
-  Object? _processingError;
 
   @override
   void initState() {
@@ -25,10 +24,7 @@ class _ResultPageState extends State<ResultPage> {
     widget.result.processed.then((value) {
       if (!mounted) return;
       setState(() => _processed = value);
-    }).catchError((Object error) {
-      if (!mounted) return;
-      setState(() => _processingError = error);
-    });
+    }).catchError((_) {});
   }
 
   Future<void> _export(BuildContext context) async {
@@ -53,7 +49,18 @@ class _ResultPageState extends State<ResultPage> {
             child: InteractiveViewer(
               minScale: .5,
               maxScale: 4,
-              child: Center(child: Image.memory(_processed ?? result.original, fit: BoxFit.contain)),
+              child: Center(
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: _processed == null && result.isFrontCamera
+                      ? Matrix4.diagonal3Values(-1.0, 1.0, 1.0)
+                      : Matrix4.identity(),
+                  child: Image.memory(
+                    _processed ?? result.original,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
             ),
           ),
           Container(
