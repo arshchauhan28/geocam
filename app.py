@@ -12,6 +12,16 @@ from flask import Flask, abort, jsonify, render_template_string, request
 
 from storage import LocalStore, RemoteStore
 
+import hashlib
+import os
+
+print(
+    "S3_SECRET_FINGERPRINT:",
+    hashlib.sha256(
+        os.environ.get("S3_SECRET_ACCESS_KEY", "").encode()
+    ).hexdigest()
+)
+
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = int(os.environ.get("MAX_UPLOAD_MB", "80")) * 1024 * 1024
 
