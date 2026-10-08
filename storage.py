@@ -122,17 +122,24 @@ class RemoteStore:
         from psycopg.rows import dict_row
 
         self._psycopg, self._dict_row = psycopg, dict_row
+        
         self.database_url = database_url
         self.bucket = bucket
+
+        ak = (os.environ.get("AWS_ACCESS_KEY_ID") or access_key or "").strip()
+        sk = (os.environ.get("AWS_SECRET_ACCESS_KEY") or secret_key or "").strip()
+        print("S3 DEBUG key:", repr(ak), "len:", len(ak),
+              "| secret len:", len(sk),
+              "| endpoint:", repr(endpoint_url),
+              "| region:", repr(region), flush=True)
+
         self.s3 = boto3.client(
             "s3", endpoint_url=endpoint_url or None,
-            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+            aws_access_key_id=ak,
+            aws_secret_access_key=sk,
             region_name=region,
             config=Config(signature_version="s3v4", s3={"addressing_style": "path"},
                           retries={"max_attempts": 3},
-                          # Newer boto3 adds CRC32 checksum trailers that many S3-compatible
-                          # services (Supabase, R2, B2) reject. Only send them when required.
                           request_checksum_calculation="when_required",
                           response_checksum_validation="when_required"),
         )
