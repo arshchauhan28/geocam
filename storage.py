@@ -5,12 +5,14 @@ LocalStore  - SQLite + files on local disk. Fine for local dev, but on Render's
 RemoteStore - Postgres (records) + S3-compatible bucket (media). Survives
               restarts. Works with Supabase/Neon + Cloudflare R2/Supabase Storage/B2.
 """
+import os
 import hashlib
 import logging
 import sqlite3
 from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
+
 
 from flask import redirect, send_file
 
@@ -124,7 +126,8 @@ class RemoteStore:
         self.bucket = bucket
         self.s3 = boto3.client(
             "s3", endpoint_url=endpoint_url or None,
-            aws_access_key_id=access_key, aws_secret_access_key=secret_key,
+            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
             region_name=region,
             config=Config(signature_version="s3v4", s3={"addressing_style": "path"},
                           retries={"max_attempts": 3},
