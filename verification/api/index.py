@@ -1,7 +1,7 @@
 import html
 import re
 
-from flask import Flask, Response
+from flask import Flask, Response, request
 
 from store import VerificationStore
 from verifier import (
@@ -259,14 +259,14 @@ def home():
 
 @app.route("/<path:path>", methods=["GET"])
 def verify(path):
-    record_id = get_record_id(path)
+    record_id = get_record_id(request.args.get("id") or path)
 
     if not record_id:
         return Response(
             verification_page(
                 "",
                 {},
-                error="Invalid GeoCam record ID."
+                error=f"Invalid GeoCam record ID. path={path!r}"
             ),
             status=400,
             mimetype="text/html",
